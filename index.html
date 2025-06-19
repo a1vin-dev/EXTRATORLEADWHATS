@@ -5,30 +5,120 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Extrator de Telefones com Estado</title>
   <style>
-    body {
-      font-family: Arial, sans-serif;
-      padding: 20px;
+    /* Fonte moderna */
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap');
+
+    * {
+      box-sizing: border-box;
     }
+
+    body {
+      font-family: 'Inter', sans-serif;
+      background: #f5f7fa;
+      margin: 0;
+      padding: 30px 20px;
+      color: #333;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    h1 {
+      font-weight: 600;
+      margin-bottom: 10px;
+      color: #2c3e50;
+      text-align: center;
+    }
+
+    p {
+      max-width: 600px;
+      text-align: center;
+      margin-bottom: 15px;
+      color: #555;
+    }
+
     textarea {
       width: 100%;
-      height: 200px;
+      max-width: 600px;
+      height: 180px;
+      padding: 12px 15px;
+      font-size: 1rem;
+      border: 1.8px solid #ced4da;
+      border-radius: 8px;
+      resize: vertical;
+      transition: border-color 0.3s ease;
+      font-family: 'Inter', monospace;
     }
+    textarea:focus {
+      border-color: #4a90e2;
+      outline: none;
+      box-shadow: 0 0 8px rgba(74, 144, 226, 0.4);
+    }
+
+    .buttons {
+      margin-top: 15px;
+      max-width: 600px;
+      width: 100%;
+      display: flex;
+      gap: 12px;
+      justify-content: center;
+    }
+
     button {
-      margin-top: 10px;
-      padding: 10px 20px;
+      flex: 1;
+      padding: 12px 0;
+      font-weight: 600;
+      font-size: 1rem;
+      color: white;
+      background: #4a90e2;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      box-shadow: 0 4px 6px rgb(74 144 226 / 0.5);
+      transition: background-color 0.3s ease, box-shadow 0.3s ease;
+      user-select: none;
     }
+    button:disabled {
+      background: #a0b8db;
+      cursor: default;
+      box-shadow: none;
+    }
+    button:hover:not(:disabled) {
+      background: #357abd;
+      box-shadow: 0 6px 10px rgb(53 122 189 / 0.7);
+    }
+
     table {
-      margin-top: 20px;
+      margin-top: 25px;
       border-collapse: collapse;
       width: 100%;
+      max-width: 600px;
+      background: white;
+      border-radius: 10px;
+      overflow: hidden;
+      box-shadow: 0 2px 8px rgb(0 0 0 / 0.1);
     }
+
     th, td {
-      border: 1px solid #ddd;
-      padding: 8px;
-      font-family: monospace;
+      padding: 14px 20px;
+      text-align: left;
+      font-family: 'Inter', monospace;
+      font-size: 0.95rem;
     }
-    th {
-      background-color: #f2f2f2;
+
+    thead {
+      background-color: #4a90e2;
+      color: white;
+      font-weight: 600;
+    }
+
+    tbody tr:nth-child(even) {
+      background-color: #f9faff;
+    }
+
+    tbody tr:hover {
+      background-color: #e1eaff;
     }
   </style>
 </head>
@@ -36,8 +126,11 @@
   <h1>Extrator de Telefones com Estado</h1>
   <p>Cole abaixo o texto com os números misturados:</p>
   <textarea id="inputText" placeholder="Cole os dados aqui..."></textarea>
-  <br>
-  <button onclick="extrairNumeros()">Extrair Telefones</button>
+  <div class="buttons">
+    <button id="btnExtrair" onclick="extrairNumeros()">Extrair Telefones</button>
+    <button id="btnCopiar" onclick="copiarTudo()" style="display:none;">Copiar Tudo</button>
+  </div>
+
   <table id="tabelaResultado" style="display:none;">
     <thead>
       <tr>
@@ -93,7 +186,6 @@
         const numeroSemDDD = parte1 + parte2;
         const numeroCompleto = `' +55 (${ddd}) ${parte1}-${parte2}`;
 
-        // Se esse número já foi adicionado (mesmo com DDD diferente), ignorar
         if (!numerosUnicos.has(numeroSemDDD)) {
           numerosUnicos.set(numeroSemDDD, { numero: numeroCompleto, uf: estado });
         }
@@ -101,7 +193,9 @@
 
       const tbody = document.getElementById("resultado");
       tbody.innerHTML = "";
-      document.getElementById("tabelaResultado").style.display = "table";
+      document.getElementById("tabelaResultado").style.display = numerosUnicos.size ? "table" : "none";
+      const btnCopiar = document.getElementById("btnCopiar");
+      btnCopiar.style.display = numerosUnicos.size ? "inline-block" : "none";
 
       numerosUnicos.forEach(({ numero, uf }) => {
         const row = document.createElement("tr");
@@ -115,6 +209,23 @@
         row.appendChild(tdUF);
 
         tbody.appendChild(row);
+      });
+    }
+
+    function copiarTudo() {
+      const tbody = document.getElementById("resultado");
+      let textoParaCopiar = "";
+
+      for (const row of tbody.rows) {
+        const col1 = row.cells[0].textContent;
+        const col2 = row.cells[1].textContent;
+        textoParaCopiar += col1 + "\t" + col2 + "\n";
+      }
+
+      navigator.clipboard.writeText(textoParaCopiar).then(() => {
+        alert("Tabela copiada para a área de transferência!");
+      }, () => {
+        alert("Erro ao copiar para a área de transferência.");
       });
     }
   </script>
